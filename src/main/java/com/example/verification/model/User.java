@@ -5,6 +5,7 @@ import java.util.Date;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
+import org.jboss.aerogear.security.otp.api.Base32;
 
 import javax.persistence.*;
 
@@ -14,6 +15,7 @@ import javax.persistence.*;
 @Entity
 @Table(name = "users")
 public class User {
+
   private static final long OTP_VALID_DURATION = 5 * 60 * 1000;   // 5 minutes
 
   @Id
@@ -27,22 +29,25 @@ public class User {
 
   private String password;
 
-//  @Column(name = "one_time_password")
-//  private String oneTimePassword;
-//
-//  @Column(name = "otp_requested_time")
-//  private Date otpRequestedTime;
-
   private boolean enabled = false;
 
-//  public boolean isOTPExpired() {
-//    long currentTimeInMillis = System.currentTimeMillis();
-//    long otpRequestedTimeInMillis = this.otpRequestedTime.getTime();
-//
-//    if (otpRequestedTimeInMillis + OTP_VALID_DURATION < currentTimeInMillis) {
-//      // OTP expires
-//      return false;
-//    }
-//    return true;
-//  }
+  private String secret;
+
+  @Override
+  public boolean equals(final Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null) {
+      return false;
+    }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    final User user = (User) obj;
+    if (!getEmail().equals(user.getEmail())) {
+      return false;
+    }
+    return true;
+  }
 }

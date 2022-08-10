@@ -3,11 +3,11 @@ package com.example.verification.security.jwt;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 
-public class JWTToken {
+public class JwtToken {
 
   private String idToken;
 
-  public JWTToken(String idToken) {
+  public JwtToken(String idToken) {
     this.idToken = idToken;
   }
 

@@ -1,67 +1,79 @@
 package com.example.verification.service;
 
-import java.io.UnsupportedEncodingException;
-import java.text.DecimalFormat;
-import java.util.Calendar;
-import java.util.Random;
+import java.time.Instant;
+import java.util.Date;
 
-import javax.mail.MessagingException;
 import javax.transaction.Transactional;
 
-import com.example.verification.model.OneTimePassword;
+import com.example.verification.dto.UserDto;
+import com.example.verification.exception.OtpInvalidException;
+import com.example.verification.exception.UserNotFoundException;
+import com.example.verification.mapper.MapStructMapper;
+import com.example.verification.model.Otp;
 import com.example.verification.model.User;
-import com.example.verification.repository.OneTimePasswordRepository;
+import com.example.verification.repository.OtpRepository;
 import com.example.verification.repository.UserRepository;
+import com.example.verification.util.OtpUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 @Transactional
 public class OtpService {
+
+  private final Logger LOGGER = LoggerFactory.getLogger(OtpService.class);
+
   @Autowired
-  private OneTimePasswordRepository oneTimePasswordRepository;
+  private OtpRepository otpRepository;
 
   @Autowired
   private UserRepository userRepository;
 
+  @Autowired
+  private MapStructMapper mapper;
+
+  @Autowired
+  private OtpUtil otpUtil;
+
   /**
    * Generate an OTP for a user.
-   * @param user user to associate the generated OTP with
+   * @param userDto user to associate the generated OTP with
    * @return the OTP created
-   * @throws MessagingException
-   * @throws UnsupportedEncodingException
    */
-  public OneTimePassword generateOtpForUser(User user) throws MessagingException, UnsupportedEncodingException {
+  public Otp generateOtpForUser(UserDto userDto) throws UserNotFoundException {
+    LOGGER.debug("Generating OTP for user");
     // attach an OTP to a user
-    String token = new DecimalFormat("000000").format(new Random().nextInt(999999));
-    final OneTimePassword otp = new OneTimePassword(token, user);
+    User foundUser = userRepository.findByEmail(userDto.getEmail());
+    if (foundUser == null) {
+      throw new UserNotFoundException("user not found.");
+    }
+    final Otp otp = new Otp(otpUtil.generateOtp(), foundUser, otpUtil.calculateExpiryDate());
 
-    return oneTimePasswordRepository.save(otp);
+    return otpRepository.save(otp);
   }
 
   /**
    * Verify OTP. Activate the associated user if OTP is valid
-   * @param token OTP token
+   * @param otpToken OTP token
    * @return whether OTP is valid
    */
-  public boolean verifyOtp(String otpToken) {
-    final OneTimePassword foundOtp = oneTimePasswordRepository.findByToken(otpToken);
+  public Otp verifyOtp(String otpToken) throws OtpInvalidException {
+    // Same tokens might exist
+    // only get the one that hasn't expired (assume this is unique)
+    Date now = Date.from(Instant.now());
+    final Otp foundOtp = otpRepository.findByTokenAndExpiryDateGreaterThan(otpToken, now);
     if (foundOtp == null) {
-      return false;
+      throw new OtpInvalidException("Otp not found.");
     }
 
     final User user = foundOtp.getUser();
-    final Calendar cal = Calendar.getInstance();
-    if ((foundOtp.getExpiryDate().getTime() - cal.getTime().getTime()) <= 0) {
-      // delete OTP if expired
-      oneTimePasswordRepository.delete(foundOtp);
-      return false;
-    }
 
     // activate user
     user.setEnabled(true);
-    oneTimePasswordRepository.delete(foundOtp);
+    otpRepository.delete(foundOtp);
     userRepository.save(user);
-    return true;
+    return foundOtp;
   }
 }

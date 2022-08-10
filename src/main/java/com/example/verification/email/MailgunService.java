@@ -1,45 +1,31 @@
-package com.example.verification.service;
+package com.example.verification.email;
 
 import java.io.UnsupportedEncodingException;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-import javax.transaction.Transactional;
 
+import com.example.verification.dto.UserDto;
+import com.example.verification.event.RegistrationListener;
 import com.example.verification.model.User;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.MessageSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
-import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
-@Service
-@Transactional
-public class EmailService {
-  private static final String TEMPLATE_NAME = "registration";
-  private static final String SPRING_LOGO_IMAGE = "templates/images/spring.png";
-  private static final String PNG_MIME = "image/png";
-  private static final String MAIL_SUBJECT = "Registration Confirmation";
+@Service("mailgunService")
+public class MailgunService extends AbstractEmailService {
 
-  @Autowired
-  private MessageSource messages;
+  private final Logger LOGGER = LoggerFactory.getLogger(MailgunService.class);
 
-  @Autowired
-  private JavaMailSender mailSender;
+  @Override
+  public void sendOtpEmail(final UserDto userDto, final String otpToken) throws MessagingException, UnsupportedEncodingException {
+    LOGGER.debug("Sending OTP via email with Mailgun");
 
-  @Autowired
-  private Environment environment;
-
-  @Autowired
-  private TemplateEngine htmlTemplateEngine;
-
-  public void sendOtpEmail(final User user, final String token) throws MessagingException, UnsupportedEncodingException {
     String mailFrom = environment.getProperty("spring.mail.properties.mail.smtp.from");
     String mailFromName = environment.getProperty("mail.from.name", "Identity");
 
@@ -47,14 +33,13 @@ public class EmailService {
     final MimeMessageHelper email;
     email = new MimeMessageHelper(mimeMessage, true, "UTF-8");
 
-    email.setTo(user.getEmail());
+    email.setTo(userDto.getEmail());
     email.setSubject(MAIL_SUBJECT);
     email.setFrom(new InternetAddress(mailFrom, mailFromName));
 
     final Context ctx = new Context(LocaleContextHolder.getLocale());
-    ctx.setVariable("email", user.getEmail());
-    ctx.setVariable("username", user.getUsername());
-    ctx.setVariable("otp", token);
+    ctx.setVariable("email", userDto.getEmail());
+    ctx.setVariable("otp", otpToken);
 
     final String htmlContent = this.htmlTemplateEngine.process(TEMPLATE_NAME, ctx);
 

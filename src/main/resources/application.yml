@@ -1,0 +1,63 @@
+.env:
+  directory: ./
+  filename: .env
+  ignoreIfMalformed: false
+  ignoreIfMissing: false
+  systemProperties: true
+  prefix: ""
+
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/verification}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+  jpa:
+    properties:
+      hibernate:
+        jdbc:
+          lob:
+            non_contextual_creation: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL:update}
+  mail:
+    host: smtp.mailgun.org
+    port: 587
+    username: ${MAILGUN_USERNAME:abc}
+    password: ${MAILGUN_PASSWORD:abc}
+    properties:
+      mail:
+        transport:
+          protocol: smtp
+        smtp:
+          starttls:
+            enable: true
+            required: true
+          auth: true
+          from: ${SPRING_MAIL_FROM:contact@tericcabrel.com}
+    default-encoding: UTF-8
+  sendgrid:
+    api-key: ${SENDGRID_API_KEY:abc}
+    properties:
+      mail:
+        from: ${SENDGRID_MAIL_FROM:abc}
+#spring:
+#  mail:
+#    test-connection: false
+mail:
+  from:
+    name: ${MAIL_FROM_NAME:abc}
+jwt:
+  header: Authorization
+  expiration: ${JWT_EXPIRATION:30000}
+google:
+  recaptcha:
+    key:
+      site: ${RECAPTCHA_SITE_KEY:abc}
+      secret: ${RECAPTCHA_SECRET_KEY:abc}
+purge:
+  cron:
+    expression: ${PURGE_CRON_EXPRESSION:0 */1 * * * ?}
+otp:
+  length: ${OTP_LENGTH:7}
+  expiration: ${OTP_EXPIRATION:60}

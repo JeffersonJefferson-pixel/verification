@@ -1,18 +1,14 @@
 package com.example.verification.event;
 
-import java.io.UnsupportedEncodingException;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.IOException;
 
 import javax.mail.MessagingException;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
 
-import com.example.verification.model.OneTimePassword;
-import com.example.verification.model.User;
-import com.example.verification.service.EmailService;
+import com.example.verification.dto.UserDto;
+import com.example.verification.email.IEmailService;
+import com.example.verification.exception.UserNotFoundException;
+import com.example.verification.model.Otp;
 import com.example.verification.service.OtpService;
-import com.example.verification.service.UserService;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
@@ -20,28 +16,24 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class RegistrationListener implements ApplicationListener<OnRegistrationCompleteEvent> {
-  @Autowired
-  private UserService userService;
 
   @Autowired
   private OtpService otpService;
 
-  @Autowired EmailService emailService;
+  @Autowired
+  private IEmailService sendgridService;
 
   @SneakyThrows
   @Override
   public void onApplicationEvent(OnRegistrationCompleteEvent event) {
-    this.confirmRegistration(event);
+    this.sendOtp(event);
   }
 
-  private void confirmRegistration(OnRegistrationCompleteEvent event) throws MessagingException, UnsupportedEncodingException {
-    System.out.println("Event caught");
-    User user = event.getUser();
+  private void sendOtp(OnRegistrationCompleteEvent event) throws UserNotFoundException, MessagingException, IOException {
+    UserDto userDto = event.getUserDto();
 
-    OneTimePassword otp = otpService.generateOtpForUser(user);
-    System.out.println("otp created");
+    Otp otp = otpService.generateOtpForUser(userDto);
 
-//    emailService.sendOtpEmail(user, otp.getToken());
-//    System.out.println("Email sent");
+//    sendgridService.sendOtpEmail(userDto, otp.getToken());
   }
 }

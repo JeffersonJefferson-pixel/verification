@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: verification
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: verification
+  template:
+    metadata:
+      labels:
+        app: verification
+    spec:
+      containers:
+        - name: app
+          image: jeffersonjeffersonpixel/verification-microservice:1.0.0
+          ports:
+            - containerPort: 8080
+          env:
+            - name: POSTGRES_URL
+              value: jdbc:postgresql://postgres:5432/postgres
+          imagePullPolicy: "IfNotPresent"
+#          imagePullPolicy: Always

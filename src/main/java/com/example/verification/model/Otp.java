@@ -1,6 +1,5 @@
 package com.example.verification.model;
 
-import java.util.Calendar;
 import java.util.Date;
 
 import javax.persistence.Entity;
@@ -11,7 +10,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-
 @NoArgsConstructor
 @Getter
 @Setter
@@ -19,32 +17,25 @@ import lombok.Setter;
 /**
  * ref: https://www.baeldung.com/registration-verify-user-by-email
  */
-public class OneTimePassword {
-  private static final int EXPIRATION = 60 * 24;
+public class Otp {
 
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
   private long id;
 
+//  @Column(unique = true, length = 6)
   private String token;
 
   @OneToOne(targetEntity = User.class, fetch = FetchType.EAGER)
-  @JoinColumn(nullable = false, name = "user_id")
+  @JoinColumn(nullable = false, name = "user_id", foreignKey = @ForeignKey(name = "FK_VERIFY_USER"))
   private User user;
 
   private Date expiryDate;
 
-  public OneTimePassword(final String token, User user) {
+  public Otp(final String token, User user, Date expiryDate) {
     this.token = token;
     this.user = user;
-    this.expiryDate = calculateExpiryDate(EXPIRATION);
-  }
-
-  private Date calculateExpiryDate(final int expiryTimeInMinutes) {
-    final Calendar cal = Calendar.getInstance();
-    cal.setTimeInMillis(new Date().getTime());
-    cal.add(Calendar.MINUTE, expiryTimeInMinutes);
-    return new Date(cal.getTime().getTime());
+    this.expiryDate = expiryDate;
   }
 
   /**
@@ -65,7 +56,7 @@ public class OneTimePassword {
       return false;
     }
 
-    final OneTimePassword other = (OneTimePassword) obj;
+    final Otp other = (Otp) obj;
 
     if (getExpiryDate() == null) {
       if (other.getExpiryDate() != null) {
@@ -93,19 +84,19 @@ public class OneTimePassword {
     return true;
   }
 
-  /**
-   * Change token of an OTP instance and extend the expiry date.
-   * @param token new password to change.
-   */
-  public void updateToken(final String token) {
-    this.token = token;
-    this.expiryDate = calculateExpiryDate(EXPIRATION);
-  }
+//  private Date calculateExpiryDate(final int expiryTimeInMinutes) {
+//    final Calendar cal = Calendar.getInstance();
+//    cal.setTimeInMillis(new Date().getTime());
+//    cal.add(Calendar.MINUTE, expiryTimeInMinutes);
+//    return new Date(cal.getTime().getTime());
+//  }
 
-  @Override
-  public String toString() {
-    final StringBuilder builder = new StringBuilder();
-    builder.append("Token [String=").append(token).append("]").append("[Expires").append(expiryDate).append("]");
-    return builder.toString();
-  }
+//  /**
+//   * Change token of an OTP instance and extend the expiry date.
+//   * @param token new password to change.
+//   */
+//  public void updateToken(final String token) {
+//    this.token = token;
+//    this.expiryDate = calculateExpiryDate(EXPIRATION);
+//  }
 }
