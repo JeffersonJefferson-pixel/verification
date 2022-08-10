@@ -34,6 +34,6 @@ public class RegistrationListener implements ApplicationListener<OnRegistrationC
 
     Otp otp = otpService.generateOtpForUser(userDto);
 
-//    sendgridService.sendOtpEmail(userDto, otp.getToken());
+    sendgridService.sendOtpEmail(userDto, otp.getToken());
   }
 }

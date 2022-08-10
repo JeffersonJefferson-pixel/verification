@@ -1,8 +1,8 @@
 .env:
   directory: ./
   filename: .env
-  ignoreIfMalformed: false
-  ignoreIfMissing: false
+  ignoreIfMalformed: true
+  ignoreIfMissing: true
   systemProperties: true
   prefix: ""
 

@@ -1,26 +1,27 @@
 services:
   app:
-    image: "verification-microservice:latest"
+    image: verification-microservice:latest
 #    build:
 #      context: .
     container_name: verification-microservice
     depends_on:
       - db
     environment:
-      - SPRING_DATASOURCE_URL=jdbc: postgresql://verification-postgres:5432/postgres
-      - SPRING_DATASOURCE_USERNAME: postgres
-      - SPRING_DATASOURCE_PASSWORD: postgres
-      - OTP_LENGTH: 7
-      - JWT_EXPIRATION: 30000
-      - PURGE_CRON_EXPRESSION: "0 */1 * * * ?"
-      - SPRING_MAIL_FROM: contact@tsc.com
-      - MAIL_FROM_NAME: VerificationMicroservice
-      - MAILGUN_USERNAME: ${MAILGUN_USERNAME}
-      - MAILGUN_PASSWORD: ${MAILGUN_PASSWORD}
-      - RECAPTCHA_SITE_KEY: ${RECAPTCHA_SITE_KEY}
-      - RECAPTCHA_SECRET_KEY: ${RECAPTCHA_SECRET_KEY}
-      - SENDGRID_API_KEY: ${SENDGRID_API_KEY}
-      - SENDGRID_MAIL_FROM: ${SENDGRID_MAIL_FROM}
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://verification-postgres:5432/postgres
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - SPRING_JPA_HIBERNATE_DDL=update
+      - OTP_LENGTH=7
+      - JWT_EXPIRATION=30000
+      - PURGE_CRON_EXPRESSION="0 */1 * * * ?"
+      - SPRING_MAIL_FROM=${SPRING_MAIL_FROM}
+      - MAIL_FROM_NAME=${MAIL_FROM_NAME}
+      - MAILGUN_USERNAME=${MAILGUN_USERNAME}
+      - MAILGUN_PASSWORD=${MAILGUN_PASSWORD}
+      - RECAPTCHA_SITE_KEY=${RECAPTCHA_SITE_KEY}
+      - RECAPTCHA_SECRET_KEY=${RECAPTCHA_SECRET_KEY}
+      - SENDGRID_API_KEY=${SENDGRID_API_KEY}
+      - SENDGRID_MAIL_FROM=${SENDGRID_MAIL_FROM}
     ports:
       - "8000:8080"
     networks:
@@ -30,8 +31,8 @@ services:
     image: postgres
     container_name: verification-postgres
     environment:
-      - POSTGRES_USER: postgres
-      - POSTGRES_PASSWORD: postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
     ports:
       - "8001:5432"
     networks:
